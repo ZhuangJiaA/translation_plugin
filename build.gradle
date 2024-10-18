@@ -1,0 +1,46 @@
+import javax.tools.JavaCompiler
+
+plugins {
+  id("java")
+  id("org.jetbrains.intellij") version "1.16.1"
+}
+
+//插件的一些基本信息
+group = "com.southpaw.cloud"
+version = "1.0-SNAPSHOT"
+
+//依赖的中央仓库配置，这里我们一般是会改为直接去idea官网下载或者使用你的私服等镜像地址
+repositories {
+  mavenCentral()
+}
+
+// Configure Gradle IntelliJ Plugin
+// Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
+//定义了gradle构建时依赖的idea版本，我们进行插件调试的时候，会使用这里定义的idea版本进行测试
+intellij {
+  version.set("2023.3")
+  type.set("IC") // Target IDE Platform
+
+  plugins = [/* Plugin Dependencies */]
+  updateSinceUntilBuild = false
+}
+
+//定义构建的任务，主要是改一下编译的jdk版本，插件适用的idea版本，字符编码等信息
+tasks.withType(JavaCompiler.class).configureEach(task -> {
+  task.getOptions().setEncoding("UTF-8");
+  sourceCompatibility = "17";
+  targetCompatibility = "17";
+});
+tasks.patchPluginXml {
+  //注意这个版本号不能高于上面intellij的version，否则runIde会报错
+  sinceBuild.set("231")
+  untilBuild.set("241.*")
+}
+tasks.signPlugin {
+  certificateChain.set(System.getenv("CERTIFICATE_CHAIN"))
+  privateKey.set(System.getenv("PRIVATE_KEY"))
+  password.set(System.getenv("PRIVATE_KEY_PASSWORD"))
+}
+tasks.publishPlugin {
+  token.set(System.getenv("PUBLISH_TOKEN"))
+}
